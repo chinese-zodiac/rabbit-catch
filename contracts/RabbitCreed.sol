@@ -3,12 +3,16 @@
 pragma solidity ^0.8.4;
 
 import "./metatx/EIP712MetaTransaction.sol";
+import "@openzeppelin/contracts/security/PullPayment.sol";
 
-contract RabReferralRegistry is EIP712MetaTransaction {
+contract RabbitCreed is EIP712MetaTransaction, PullPayment {
+
     mapping(string=>address) public codeToAccount;
     mapping(address=>string) public accountToCode;
 
-    constructor() EIP712MetaTransaction("@RabbitCatch/RabReferralRegistry","1.0.0") {}
+    mapping(address=>uint256) public rewards;
+
+    constructor() EIP712MetaTransaction("@RabbitCatch/RabbitCreed","1.0.0") { }
 
     function unregister() public {
         string storage code = accountToCode[msgSender()];
@@ -20,5 +24,9 @@ contract RabReferralRegistry is EIP712MetaTransaction {
         unregister();
         codeToAccount[_code] = msgSender();
         accountToCode[msgSender()] = _code;
+    }
+
+    function addRewards(string calldata _code) external payable {
+        _asyncTransfer(codeToAccount[_code], address(this).balance);
     }
 }
