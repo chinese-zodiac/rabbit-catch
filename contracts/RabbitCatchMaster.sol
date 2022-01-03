@@ -64,7 +64,8 @@ contract RabbitCatchMaster is Ownable, EIP712MetaTransaction {
         require(canMint(_for), "RabbitCatchMaster: Cannot Mint");
         require(msg.value == getPrice(), "RabbitCatchMaster: Invalid BNB Value");
         //TODO: Mint and transfer NFT after generating zodiacId and tokenURI
-        //czodiacNFT.mintmint(string memory tokenURI_, uint256 zodiacId);
+        //czodiacNFT.mint(string memory tokenURI_, uint256 zodiacId);
+        //czodiacNFT.transfer(_for,czodiacNFT.totalSupply()-1)
         uint256 tenPct = msg.value/10;
         rabbitRocket.timerReset{value:tenPct}(_for);
         if(bytes(_code).length != 0) {
@@ -73,7 +74,7 @@ contract RabbitCatchMaster is Ownable, EIP712MetaTransaction {
         rabbitGreed.increaseTotalBuys{value:tenPct}(_for,1);
         rabbitFancier.addToRewards{value:tenPct}();
         rabbitBreed.addToRewards{value:tenPct}();
-        payable(owner()).sendValue(address(this).balance);        
+        payable(owner()).sendValue(address(this).balance);  
     }
 
 }
