@@ -38,7 +38,7 @@ contract RabbitRocket is AccessControlEnumerable, Ownable, EIP712MetaTransaction
     }
 
     function isOver() public view returns (bool isOver_) {
-        if(endGameOverride) return endGameOverride;
+        if(endGameOverride) return true;
         return endEpoch < block.timestamp;
     }
 

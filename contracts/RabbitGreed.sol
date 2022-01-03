@@ -10,7 +10,7 @@ import "@openzeppelin/contracts/security/PullPayment.sol";
 contract RabbitGreed is AccessControlEnumerable, EIP712MetaTransaction, PullPayment {
     bytes32 public constant MASTER_ROLE = keccak256("MASTER_ROLE");
 
-    mapping(address=>uint32) totalBuys;
+    mapping(address=>uint32) public totalBuys;
 
     address public first;
     address public second;
