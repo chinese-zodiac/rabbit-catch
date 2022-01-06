@@ -11,9 +11,12 @@ import "./RabbitBreed.sol";
 import "./czodiac/CZodiacNFT.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-contract RabbitCatchMaster is Ownable, EIP712MetaTransaction {
+contract RabbitCatchMaster is Ownable, EIP712MetaTransaction, ReentrancyGuard {
     using Address for address payable;
+    string public constant baseURI =
+        "ipfs://QmQTZxzWAxtnCes1zeo6CbvkNcHQcvgH4cCzopGjx6Y3Q2/";
 
     RabbitRocket public rabbitRocket;
     RabbitCreed public rabbitCreed;
@@ -29,28 +32,41 @@ contract RabbitCatchMaster is Ownable, EIP712MetaTransaction {
     uint256 public constant mintCountMax = 2500;
     uint256 public mintCount;
 
-    mapping(address=>bool) whitelist;
-    uint256 public constant whitelistMintCap = 5; 
+    mapping(address => bool) whitelist;
+    uint256 public constant whitelistMintCap = 5;
 
-    constructor(RabbitRocket _rabbitRocket, RabbitCreed _rabbitCreed, RabbitGreed _rabbitGreed, RabbitFancier _rabbitFancier, RabbitBreed _rabbitBreed, CZodiacNFT _czodiacNFT) EIP712MetaTransaction("@RabbitCatch/RabbitCatchMaster","1.0.0") Ownable() {
+    constructor(
+        RabbitRocket _rabbitRocket,
+        RabbitCreed _rabbitCreed,
+        RabbitGreed _rabbitGreed,
+        RabbitFancier _rabbitFancier,
+        RabbitBreed _rabbitBreed,
+        CZodiacNFT _czodiacNFT
+    )
+        EIP712MetaTransaction("@RabbitCatch/RabbitCatchMaster", "1.0.0")
+        Ownable()
+    {
         rabbitRocket = _rabbitRocket;
         rabbitCreed = _rabbitCreed;
         rabbitGreed = _rabbitGreed;
         rabbitFancier = _rabbitFancier;
         rabbitBreed = _rabbitBreed;
 
-        czodiacNFT = _czodiacNFT;        
+        czodiacNFT = _czodiacNFT;
     }
 
     function getPrice() public view returns (uint256 _price) {
-        return priceStart + (priceIncrement)*(mintCount/mintCountPriceIncrement);
+        return
+            priceStart +
+            (priceIncrement) *
+            (mintCount / mintCountPriceIncrement);
     }
 
     function canMint(address _for) public view returns (bool _canMint) {
-        if(mintCount > mintCountMax) return false;
-        if(rabbitRocket.isOver()) return false;
-        if(block.timestamp < rabbitRocket.whitelistEndEpoch()) {
-            if(whitelist[_for]) {
+        if (mintCount > mintCountMax) return false;
+        if (rabbitRocket.isOver()) return false;
+        if (block.timestamp < rabbitRocket.whitelistEndEpoch()) {
+            if (whitelist[_for]) {
                 return rabbitGreed.totalBuys(_for) < whitelistMintCap;
             } else {
                 return false;
@@ -60,21 +76,40 @@ contract RabbitCatchMaster is Ownable, EIP712MetaTransaction {
         }
     }
 
-    function mint(address _for, string calldata _code) external payable {
+    function mint(address _for, string calldata _code)
+        external
+        payable
+        nonReentrant
+    {
         require(canMint(_for), "RabbitCatchMaster: Cannot Mint");
-        require(msg.value == getPrice(), "RabbitCatchMaster: Invalid BNB Value");
-        //TODO: Mint and transfer NFT after generating zodiacId and tokenURI
-        //czodiacNFT.mint(string memory tokenURI_, uint256 zodiacId);
-        //czodiacNFT.transfer(_for,czodiacNFT.totalSupply()-1)
-        uint256 tenPct = msg.value/10;
-        rabbitRocket.timerReset{value:tenPct}(_for);
-        if(bytes(_code).length != 0) {
-            rabbitCreed.addRewards{value:tenPct}(_code);
+        require(
+            msg.value == getPrice(),
+            "RabbitCatchMaster: Invalid BNB Value"
+        );
+        czodiacNFT.mint(
+            string(
+                abi.encodePacked(
+                    baseURI,
+                    Strings.toString(mintCount + 1),
+                    ".json"
+                )
+            ),
+            3
+        );
+        czodiacNFT.safeTransferFrom(
+            address(this),
+            _for,
+            czodiacNFT.totalSupply() - 1
+        );
+        uint256 tenPct = msg.value / 10;
+        rabbitRocket.timerReset{value: tenPct}(_for);
+        if (bytes(_code).length != 0) {
+            rabbitCreed.addRewards{value: tenPct}(_code);
         }
-        rabbitGreed.increaseTotalBuys{value:tenPct}(_for,1);
-        rabbitFancier.addToRewards{value:tenPct}();
-        rabbitBreed.addToRewards{value:tenPct}();
-        payable(owner()).sendValue(address(this).balance);  
+        rabbitGreed.increaseTotalBuys{value: tenPct}(_for, 1);
+        rabbitFancier.addToRewards{value: tenPct}();
+        rabbitBreed.addToRewards{value: tenPct}();
+        mintCount++;
+        payable(owner()).sendValue(address(this).balance);
     }
-
 }
