@@ -53,6 +53,10 @@ contract RabbitRocket is
         return endEpoch < block.timestamp;
     }
 
+    function isWhitelistOnly() public view returns (bool isWhitelistOnly_) {
+        return isStarted() && !isOver() && whitelistEndEpoch > block.timestamp;
+    }
+
     function isStarted() public view returns (bool isOver_) {
         return startEpoch < block.timestamp;
     }
