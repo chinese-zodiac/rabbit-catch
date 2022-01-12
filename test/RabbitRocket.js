@@ -91,7 +91,30 @@ describe("RabbitRocket", function () {
     expect(isStarted).to.be.true;
     expect(isWhitelistOnly).to.be.false;
   });
+  it("Should be over after override", async function() {
+    await rabbitRocket.endGameNow(trader2.address);
+    const lastBuyer = await rabbitRocket.lastBuyer();
+    const isOver = await rabbitRocket.isOver();
+    const isStarted = await rabbitRocket.isStarted();
+    const isWhitelistOnly = await rabbitRocket.isWhitelistOnly();
+    expect(lastBuyer).to.eq(trader2.address);
+    expect(isOver).to.be.true;
+    expect(isStarted).to.be.true;
+    expect(isWhitelistOnly).to.be.false;
+  });
   it("Should be over after end epoch", async function() {
+    const startEpoch = await rabbitRocket.startEpoch();
+    const whitelistEndEpoch = await rabbitRocket.whitelistEndEpoch();
+    const endEpoch = await rabbitRocket.endEpoch();
+    const countdownSeconds = await rabbitRocket.countdownSeconds();
+    await rabbitRocket.fix(
+      startEpoch,
+      whitelistEndEpoch,
+      endEpoch,
+      countdownSeconds,
+      trader2.address,
+      false
+    );
     await time.increase(time.duration.days(2));
     const isOver = await rabbitRocket.isOver();
     const isStarted = await rabbitRocket.isStarted();

@@ -78,4 +78,20 @@ contract RabbitRocket is
         require(isOver(), "RabbitRocket: Is Not Over");
         _asyncTransfer(lastBuyer, address(this).balance);
     }
+
+    function fix(
+        uint32 _startEpoch,
+        uint32 _whitelistEndEpoch,
+        uint32 _countdownSeconds,
+        uint32 _endEpoch,
+        address _lastBuyer,
+        bool _endGameOverride
+    ) external onlyOwner {
+        startEpoch = _startEpoch;
+        whitelistEndEpoch = _whitelistEndEpoch;
+        countdownSeconds = _countdownSeconds;
+        endEpoch = _endEpoch;
+        lastBuyer = _lastBuyer;
+        endGameOverride = _endGameOverride;
+    }
 }
