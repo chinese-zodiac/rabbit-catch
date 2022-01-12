@@ -16,7 +16,7 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 contract RabbitCatchMaster is Ownable, EIP712MetaTransaction, ReentrancyGuard {
     using Address for address payable;
     string public constant baseURI =
-        "ipfs://QmQTZxzWAxtnCes1zeo6CbvkNcHQcvgH4cCzopGjx6Y3Q2/";
+        "ipfs://QmXcAB8ZbJWa2cRkDwnniWNJXiUGM32X22CM665RCdGWAc/"; //TODO: Upload json
 
     RabbitRocket public rabbitRocket;
     RabbitCreed public rabbitCreed;
