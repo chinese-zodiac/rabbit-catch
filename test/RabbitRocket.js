@@ -10,6 +10,8 @@ const { time } = require("@openzeppelin/test-helpers");
 const { toNum, toBN } = require("./utils/bignumberConverter");
 const { expect } = require('chai');
 
+const { parseEther } = ethers.utils;
+
 describe("RabbitRocket", function () {
   let owner, trader, trader1, trader2, trader3;
   let rabbitRocket;
@@ -55,7 +57,7 @@ describe("RabbitRocket", function () {
     expect(isWhitelistOnly).to.be.true;
   });
   it("Should be not change the end epoch if timer reset in whitelist period", async function() {
-    await rabbitRocket.timerReset(trader.address);
+    await rabbitRocket.timerReset(trader.address,{value:parseEther("0.1")});
     const lastBuyer = await rabbitRocket.lastBuyer();
     const isOver = await rabbitRocket.isOver();
     const isStarted = await rabbitRocket.isStarted();
@@ -77,7 +79,7 @@ describe("RabbitRocket", function () {
   });
   it("Should be increase end epoch", async function() {
     const currentTime = (await time.latest()).toNumber();
-    await rabbitRocket.timerReset(trader1.address);
+    await rabbitRocket.timerReset(trader1.address,{value:parseEther("0.1")});
     const endEpoch = await rabbitRocket.endEpoch();
 
     const lastBuyer = await rabbitRocket.lastBuyer();
@@ -92,12 +94,14 @@ describe("RabbitRocket", function () {
     expect(isWhitelistOnly).to.be.false;
   });
   it("Should be over after override", async function() {
-    await rabbitRocket.endGameNow(trader2.address);
+    const isOverInitial = await rabbitRocket.isOver();
+    await rabbitRocket.endGameNow(trader2.address,{value:parseEther("0.1")});
     const lastBuyer = await rabbitRocket.lastBuyer();
     const isOver = await rabbitRocket.isOver();
     const isStarted = await rabbitRocket.isStarted();
     const isWhitelistOnly = await rabbitRocket.isWhitelistOnly();
     expect(lastBuyer).to.eq(trader2.address);
+    expect(isOverInitial).to.be.false;
     expect(isOver).to.be.true;
     expect(isStarted).to.be.true;
     expect(isWhitelistOnly).to.be.false;
@@ -110,18 +114,28 @@ describe("RabbitRocket", function () {
     await rabbitRocket.fix(
       startEpoch,
       whitelistEndEpoch,
-      endEpoch,
       countdownSeconds,
+      endEpoch,
       trader2.address,
       false
     );
+    const isOverPostFix = await rabbitRocket.isOver();
+    await rabbitRocket.timerReset(trader3.address,{value:parseEther("0.1")});
     await time.increase(time.duration.days(2));
     const isOver = await rabbitRocket.isOver();
     const isStarted = await rabbitRocket.isStarted();
     const isWhitelistOnly = await rabbitRocket.isWhitelistOnly();
+    expect(isOverPostFix).to.be.false;
     expect(isOver).to.be.true;
     expect(isStarted).to.be.true;
     expect(isWhitelistOnly).to.be.false;
   });
-  //TODO: test sendRewards
+  it("Should send rewards to last buyer", async function() {
+    await rabbitRocket.sendRewards();
+    const paymentsInitial = await rabbitRocket.payments(trader3.address);
+    await rabbitRocket.withdrawPayments(trader3.address);
+    const paymentsFinal = await rabbitRocket.payments(trader3.address);
+    expect(paymentsInitial).to.eq(parseEther("0.4"));
+    expect(paymentsFinal).to.eq(0);
+  })
 });

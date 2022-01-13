@@ -68,7 +68,11 @@ contract RabbitRocket is
         if (newEndEpoch > endEpoch) endEpoch = newEndEpoch;
     }
 
-    function endGameNow(address _winner) external onlyRole(MASTER_ROLE) {
+    function endGameNow(address _winner)
+        external
+        payable
+        onlyRole(MASTER_ROLE)
+    {
         require(!isOver(), "RabbitRocket: Is Over");
         endGameOverride = true;
         lastBuyer = _winner;
