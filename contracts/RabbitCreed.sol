@@ -6,13 +6,16 @@ import "./metatx/EIP712MetaTransaction.sol";
 import "@openzeppelin/contracts/security/PullPayment.sol";
 
 contract RabbitCreed is EIP712MetaTransaction, PullPayment {
+    mapping(string => address) public codeToAccount;
+    mapping(address => string) public accountToCode;
 
-    mapping(string=>address) public codeToAccount;
-    mapping(address=>string) public accountToCode;
+    mapping(address => uint256) public rewards;
 
-    mapping(address=>uint256) public rewards;
+    constructor() EIP712MetaTransaction("@RabbitCatch/RabbitCreed", "1.0.0") {}
 
-    constructor() EIP712MetaTransaction("@RabbitCatch/RabbitCreed","1.0.0") { }
+    function isValidCode(string calldata _code) public returns (bool) {
+        return true;
+    }
 
     function unregister() public {
         string storage code = accountToCode[msgSender()];
@@ -21,6 +24,7 @@ contract RabbitCreed is EIP712MetaTransaction, PullPayment {
     }
 
     function register(string calldata _code) public {
+        require(isValidCode(_code));
         unregister();
         codeToAccount[_code] = msgSender();
         accountToCode[msgSender()] = _code;
