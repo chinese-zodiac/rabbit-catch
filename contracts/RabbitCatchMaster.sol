@@ -16,7 +16,7 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 contract RabbitCatchMaster is Ownable, EIP712MetaTransaction, ReentrancyGuard {
     using Address for address payable;
     string public constant baseURI =
-        "ipfs://QmXcAB8ZbJWa2cRkDwnniWNJXiUGM32X22CM665RCdGWAc/"; //TODO: Upload json
+        "ipfs://QmZmF4aTdKtRzFj5pZu9MvAspDic9Z6T11ymofnAiV7Gsv/";
 
     RabbitRocket public rabbitRocket;
     RabbitCreed public rabbitCreed;
@@ -108,7 +108,7 @@ contract RabbitCatchMaster is Ownable, EIP712MetaTransaction, ReentrancyGuard {
         );
         uint256 tenPct = msg.value / 10;
         rabbitRocket.timerReset{value: tenPct}(_for);
-        if (bytes(_code).length != 0) {
+        if (bytes(_code).length != 0 && rabbitCreed.isCodeRegistered(_code)) {
             rabbitCreed.addRewards{value: tenPct}(_code);
         }
         rabbitGreed.increaseTotalBuys{value: tenPct}(_for, 1);
