@@ -31,6 +31,7 @@ contract RabbitRocket is
         uint32 _countdownSeconds
     ) EIP712MetaTransaction("@RabbitCatch/RabbitRocket", "1.0.0") Ownable() {
         _setupRole(MASTER_ROLE, msgSender());
+        _setupRole(DEFAULT_ADMIN_ROLE, msgSender());
         setCountdownSeconds(_countdownSeconds);
         setEpochs(_startEpoch, _whitelistEndEpoch);
     }
