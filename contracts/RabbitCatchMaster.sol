@@ -32,7 +32,7 @@ contract RabbitCatchMaster is Ownable, EIP712MetaTransaction, ReentrancyGuard {
     uint256 public constant mintCountMax = 2500;
     uint256 public mintCount;
 
-    mapping(address => bool) whitelist;
+    mapping(address => bool) public whitelist;
     uint256 public constant whitelistMintCap = 5;
 
     constructor(
