@@ -51,4 +51,22 @@ describe("RabbitCreed", function () {
     const payments = await rabbitCreed.payments(trader1.address);
     expect(payments).to.eq(parseEther("1"));
   });
+  it("Should revert duplicate code", async function () {
+    expect(rabbitCreed.connect(trader2).register(CODE1)).to.be.revertedWith("RabbitCreed: Not valid new code");    
+  });
+  it("Should revert unregistered code", async function () {
+    expect(rabbitCreed.addRewards(CODE2,{value:parseEther("1")})).to.be.revertedWith("RabbitCreed: Code not registered");    
+  });
+  it("Should unregister code", async function () {
+    await rabbitCreed.connect(trader1).unregister();
+    const isCodeRegistered = await rabbitCreed.isCodeRegistered(CODE1);
+    const account = await rabbitCreed.codeToAccount(CODE1);
+    const code = await rabbitCreed.accountToCode(trader1.address);
+    const isValidNewCode = await rabbitCreed.isValidNewCode(CODE1);
+    expect(isCodeRegistered).to.be.false;
+    expect(account).to.eq(ethers.constants.AddressZero);
+    console.log("code",code);
+    expect(code).to.eq("");
+    expect(isValidNewCode).to.be.true;
+  })
 });

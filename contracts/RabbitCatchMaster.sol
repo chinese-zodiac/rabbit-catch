@@ -103,7 +103,7 @@ contract RabbitCatchMaster is Ownable, EIP712MetaTransaction, ReentrancyGuard {
         );
         uint256 tenPct = msg.value / 10;
         rabbitRocket.timerReset{value: tenPct}(_for);
-        if (bytes(_code).length != 0) {
+        if (bytes(_code).length != 0 && rabbitCreed.isCodeRegistered(_code)) {
             rabbitCreed.addRewards{value: tenPct}(_code);
         }
         rabbitGreed.increaseTotalBuys{value: tenPct}(_for, 1);
