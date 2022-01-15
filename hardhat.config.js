@@ -31,7 +31,7 @@ module.exports = {
   networks: {
     bscTestnet: {
       url: `https://data-seed-prebsc-1-s2.binance.org:8545`,
-      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [networkConfig.ethKey],
       gasMultiplier: 1.2,
     }
   }
