@@ -74,7 +74,7 @@ contract RabbitCatchMaster is Ownable, EIP712MetaTransaction, ReentrancyGuard {
     }
 
     function canMint(address _for) public view returns (bool _canMint) {
-        if (mintCount > mintCountMax) return false;
+        if (mintCount >= mintCountMax) return false;
         if (rabbitRocket.isOver()) return false;
         if (!rabbitRocket.isStarted()) return false;
         if (block.timestamp < rabbitRocket.whitelistEndEpoch()) {
