@@ -116,12 +116,23 @@ describe.only("RabbitCacheMaster", function () {
         expect(onWhiteList).to.be.eq(true);
 
 
-        const canMint = await rabbitCatchMaster.canMint(addr1.address);
-        console.log(`canMint is ${canMint}`);
-        expect(canMint).to.be.eq(true);
+        const canMintBeforeStart = await rabbitCatchMaster.canMint(addr1.address);
+        console.log(`canMint is ${canMintBeforeStart} before startEpoch`);
+        expect(canMintBeforeStart).to.be.false;
+        await expect(rabbitCatchMaster.connect(addr1).mint(addr1.address,'',{
+            value:ethers.utils.parseEther(priceEth.toString())
+        })).to.be.revertedWith("RabbitCatchMaster: Cannot Mint");
+
+        //Increase time past start epoch
+        await time.increase(time.duration.hours(2));
 
         let tokenbalance = await zodiacNFT.balanceOf(addr1.address);
+        console.log(`tokenbalance is ${tokenbalance}`);
         expect(tokenbalance).to.be.eq(0);
+
+        const canMintAfterStart = await rabbitCatchMaster.canMint(addr1.address);
+        console.log(`canMint is ${canMintAfterStart} after startEpoch`);
+        expect(canMintAfterStart).to.be.true;
 
         const tx2 = await rabbitCatchMaster.connect(addr1).mint(addr1.address,'',{
             value:ethers.utils.parseEther(priceEth.toString())

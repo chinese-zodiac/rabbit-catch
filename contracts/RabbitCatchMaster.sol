@@ -55,9 +55,15 @@ contract RabbitCatchMaster is Ownable, EIP712MetaTransaction, ReentrancyGuard {
         czodiacNFT = _czodiacNFT;
     }
 
-    function updateWhitelist(address _addr, bool _val) public onlyOwner{
+    function updateWhitelist(address _addr, bool _val) public onlyOwner {
         // Update the value at this address
         whitelist[_addr] = _val;
+    }
+
+    function setWhitelistedAll(address[] calldata _addr) public onlyOwner {
+        for (uint256 i = 0; i < _addr.length; i++) {
+            updateWhitelist(_addr[i], true);
+        }
     }
 
     function getPrice() public view returns (uint256 _price) {
@@ -70,6 +76,7 @@ contract RabbitCatchMaster is Ownable, EIP712MetaTransaction, ReentrancyGuard {
     function canMint(address _for) public view returns (bool _canMint) {
         if (mintCount > mintCountMax) return false;
         if (rabbitRocket.isOver()) return false;
+        if (!rabbitRocket.isStarted()) return false;
         if (block.timestamp < rabbitRocket.whitelistEndEpoch()) {
             if (whitelist[_for]) {
                 return rabbitGreed.totalBuys(_for) < whitelistMintCap;
