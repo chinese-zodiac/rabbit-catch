@@ -26,6 +26,7 @@ contract RabbitGreed is
         EIP712MetaTransaction("@RabbitCatch/RabbitGreed", "1.0.0")
     {
         _setupRole(MASTER_ROLE, msgSender());
+        _setupRole(DEFAULT_ADMIN_ROLE, msgSender());
         rabbitRocket = _rabbitRocket;
     }
 

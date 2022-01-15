@@ -55,6 +55,11 @@ contract RabbitCatchMaster is Ownable, EIP712MetaTransaction, ReentrancyGuard {
         czodiacNFT = _czodiacNFT;
     }
 
+    function updateWhitelist(address _addr, bool _val) public onlyOwner{
+        // Update the value at this address
+        whitelist[_addr] = _val;
+    }
+
     function getPrice() public view returns (uint256 _price) {
         return
             priceStart +
