@@ -155,9 +155,36 @@ describe.only("RabbitCacheMaster", function () {
             const tokenId = await zodiacNFT.tokenOfOwnerByIndex(addr1.address,i);
             console.log(`owned tokenid = ${tokenId}`);
         }        
-
-
     });
+
+    
+    it("Should stop at 2500 mints", async function () {
+        const [deployer, addr1] = await ethers.getSigners();
+
+        //Increase time past whitelist epoch
+        await time.increase(time.duration.days(1));
+
+        const mintCountInitial = await rabbitCatchMaster.mintCount();
+        const canMintBeforeMax = await rabbitCatchMaster.canMint(addr1.address);
+        expect(canMintBeforeMax).to.be.true;
+        console.log("testing 2500 mint cap. please wait...")
+        for(let i=0;i<2500-mintCountInitial;i++){ 
+            if((i+mintCountInitial.toNumber())%250==0) console.log(`${i+mintCountInitial.toNumber()} mints...`);
+            price = await rabbitCatchMaster.getPrice();
+            await rabbitCatchMaster.connect(addr1).mint(addr1.address,'',{
+                value:price
+            });
+        }
+        console.log("2500 mints success.")
+        const mintCountFinal = await rabbitCatchMaster.mintCount();
+        const canMintAfterMax = await rabbitCatchMaster.canMint(addr1.address);
+        const tokenbalance = await zodiacNFT.balanceOf(addr1.address);
+        expect(tokenbalance).to.be.eq(2500);
+        expect(canMintAfterMax).to.be.false;
+        expect(mintCountFinal).to.eq(2500);
+    });
+
+
 });
 
 async function printStatus(){
