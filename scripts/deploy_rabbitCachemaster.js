@@ -15,12 +15,15 @@ async function deployMaster(ethers){
 
   const secondsSinceEpoch = Math.round(Date.now() / 1000);
 
+  //const startTime = secondsSinceEpoch;
+  const startTime = 1642651200;
+
   //const startTime = (await time.latest()).toNumber();
 
   const rabbitRocket = await RabbitRocketfactory.deploy(
-      secondsSinceEpoch,//uint32 _startEpoch,
-      secondsSinceEpoch  + (86400 * 7), //God for 7 days uint32 _whitelistEndEpoch,
-      86400 * 7//uint32 _countdownSeconds
+      startTime,//uint32 _startEpoch,
+      startTime  + (86400 * 1), //Good for 1 days uint32 _whitelistEndEpoch,
+      86400 * 1// 1 days uint32 _countdownSeconds
   );
 
   await rabbitRocket.deployed();
