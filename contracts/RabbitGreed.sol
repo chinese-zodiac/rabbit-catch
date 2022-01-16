@@ -37,8 +37,9 @@ contract RabbitGreed is
     {
         require(!rabbitRocket.isOver(), "RabbitGreed: RabbitRocket is over");
         totalBuys[_for] += _amount;
+
+        if (first == _for) return;
         if (totalBuys[_for] > totalBuys[first]) {
-            if (first == _for) return;
             if (second == _for) {
                 second = first;
                 first = _for;
@@ -49,14 +50,16 @@ contract RabbitGreed is
             first = _for;
             return;
         }
+
+        if (second == _for) return;
         if (totalBuys[_for] > totalBuys[second]) {
-            if (second == _for) return;
             third = second;
             second = _for;
             return;
         }
+
+        if (third == _for) return;
         if (totalBuys[_for] > totalBuys[third]) {
-            if (third == _for) return;
             third = _for;
             return;
         }

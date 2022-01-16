@@ -34,10 +34,22 @@ describe("RabbitGreed", function () {
     );
 
   });
+  it("Should only make buyer first place if only one buyer", async function () {
+    await rabbitGreed.increaseTotalBuys(trader3.address,1);
+    await rabbitGreed.increaseTotalBuys(trader3.address,1);
+    await rabbitGreed.increaseTotalBuys(trader3.address,1);
+    const first = await rabbitGreed.first();
+    const second = await rabbitGreed.second();
+    const third = await rabbitGreed.third();
+    expect(first).to.eq(trader3.address);
+    expect(second).to.eq(ethers.constants.AddressZero);
+    expect(third).to.eq(ethers.constants.AddressZero);
+
+  });
   it("Should increase total buys and top buyers", async function () {
     await rabbitGreed.increaseTotalBuys(trader1.address,5,{value:parseEther("1")});
     await rabbitGreed.increaseTotalBuys(trader2.address,10,{value:parseEther("1")});
-    await rabbitGreed.increaseTotalBuys(trader3.address,2,{value:parseEther("1")});
+    await rabbitGreed.increaseTotalBuys(trader3.address,1,{value:parseEther("1")});
     await rabbitGreed.increaseTotalBuys(trader.address,1,{value:parseEther("1")});
     await rabbitGreed.increaseTotalBuys(trader1.address,6,{value:parseEther("1")});
     const first = await rabbitGreed.first();
