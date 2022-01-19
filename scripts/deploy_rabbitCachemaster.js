@@ -9,6 +9,8 @@ async function deployMaster(ethers){
 
   const [deployer] = await ethers.getSigners();
 
+  const NFT_DEPLOYED_ADDR = "0x6Bf5843b39EB6D5d7ee38c0b789CcdE42FE396b4";
+
   console.log(`deploying RabbitRocket using account ${deployer.address}`);
 
   const RabbitRocketfactory = await ethers.getContractFactory("RabbitRocket");
@@ -17,6 +19,8 @@ async function deployMaster(ethers){
 
   //const startTime = secondsSinceEpoch;
   const startTime = 1642651200;
+
+
 
   //const startTime = (await time.latest()).toNumber();
 
@@ -53,9 +57,10 @@ async function deployMaster(ethers){
   await rabbitBreed.deployed();
 
   console.log('deploying CZodiacNFT');
-  const CZodiacNFTfactory = await ethers.getContractFactory("CZodiacNFT");
+  /*const CZodiacNFTfactory = await ethers.getContractFactory("CZodiacNFT");
   const zodiacNFT = await CZodiacNFTfactory.deploy();
-  await zodiacNFT.deployed();
+  await zodiacNFT.deployed();*/
+  const zodiacNFT = await ethers.getContractAt("CZodiacNFT", NFT_DEPLOYED_ADDR);
 
 
   console.log('deploying CatchMaster');
@@ -82,6 +87,12 @@ async function deployMaster(ethers){
   await tx3.wait();
 
   console.log('all deployed');
+  console.log("rabbitMaster",rabbitCatchMaster.address);
+  console.log("rabbitRocket",rabbitRocket.address);
+  console.log("rabbitCreed",rabbitCreed.address);
+  console.log("rabbitGreed",rabbitGreed.address);
+  console.log("rabbitFancier",rabbitFancier.address);
+  console.log("rabbitBreed",rabbitBreed.address);
 
   return {rabbitCatchMaster, rabbitRocket, zodiacNFT};
 
