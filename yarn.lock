@@ -30,13 +30,10 @@
   dependencies:
     regenerator-runtime "^0.13.4"
 
-"@chainlink/contracts@^0.1.7":
-  version "0.1.9"
-  resolved "https://registry.yarnpkg.com/@chainlink/contracts/-/contracts-0.1.9.tgz#b2e77b87d7eea737cd668c4c727660e7b55cd236"
-  integrity sha512-7UIqkdzarbK876YZAiGKeYj/ujG3FPVVxWLACxbdyacM+ryIAgcZMkaaavt5+NwVXJvVjwWmucWTDCTy0JP8ag==
-  optionalDependencies:
-    "@truffle/contract" "^4.3.8"
-    ethers "^4.0.45"
+"@chainlink/contracts@^0.4.0":
+  version "0.4.0"
+  resolved "https://registry.yarnpkg.com/@chainlink/contracts/-/contracts-0.4.0.tgz#4bcfd486d02cdc73047f27904119d0f8cb7291f4"
+  integrity sha512-yZGeCBd7d+qxfw9r/JxtPzsW2kCc6MorPRZ/tDKnaJI98H99j5P2Fosfehmcwk6wVZlz+0Bp4kS1y480nw3Zow==
 
 "@ensdomains/address-encoder@^0.1.7":
   version "0.1.9"
@@ -1005,7 +1002,7 @@
     ajv "^6.10.0"
     debug "^4.3.1"
 
-"@truffle/contract@^4.0.35", "@truffle/contract@^4.3.8":
+"@truffle/contract@^4.0.35":
   version "4.4.4"
   resolved "https://registry.yarnpkg.com/@truffle/contract/-/contract-4.4.4.tgz#b668f0ef6ebfb0cec38a4f754e0d7bcf1a49b2a8"
   integrity sha512-OrMunu8vfHkBPAwZc4te9CIg/+Cc4txmc/iJmMwxZ6m1lf0dOG837IjMD0KGSkvpO59KW/eiqEK7VF/cewjN6A==
@@ -4188,7 +4185,7 @@ ethereumjs-wallet@0.6.5:
     utf8 "^3.0.0"
     uuid "^3.3.2"
 
-ethers@^4.0.32, ethers@^4.0.45:
+ethers@^4.0.32:
   version "4.0.49"
   resolved "https://registry.yarnpkg.com/ethers/-/ethers-4.0.49.tgz#0eb0e9161a0c8b4761be547396bbe2fb121a8894"
   integrity sha512-kPltTvWiyu+OktYy1IStSO16i2e7cS9D9OxZ81q2UUaiNPVrm/RTcbxamCXF9VUSKzJIdJV68EAIhTEVBalRWg==
@@ -8677,6 +8674,11 @@ solidity-coverage@^0.7.16:
     semver "^7.3.4"
     shelljs "^0.8.3"
     web3-utils "^1.3.0"
+
+solidity-linked-list@^5.1.0:
+  version "5.1.0"
+  resolved "https://registry.yarnpkg.com/solidity-linked-list/-/solidity-linked-list-5.1.0.tgz#1d07a75448eb14be7f1b71e31080f2294bda4a39"
+  integrity sha512-1+kaMJ/Q+u1KIo/VKeYRS0gFSRQMJ+/V95YzwnWGH71k+J5XJTmMH+RePFeIQ9exjEdTNpOWE70YtEV70gLGpw==
 
 source-list-map@^2.0.0:
   version "2.0.1"
