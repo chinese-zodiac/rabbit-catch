@@ -26,7 +26,7 @@ contract LuckyRabbitToken is
         MINT
     }
 
-    uint256 public constant MAX_ADDRESS_TICKETS = 500;
+    uint256 public constant MAX_ADDRESS_TICKETS = 200;
 
     VRFCoordinatorV2Interface COORDINATOR;
     LinkTokenInterface LINKTOKEN;
@@ -240,11 +240,12 @@ contract LuckyRabbitToken is
 
     function getWinner(uint256 _word) public view returns (address winner_) {
         uint256 bucketRoll = 1 + (_word % totalTickets);
-        uint256 winningBucketIndex;
+        uint256 winningBucketIndex = 0;
         uint256 accumulator;
         while (accumulator < bucketRoll) {
-            accumulator += ticketBuckets[winningBucketIndex].length;
             winningBucketIndex++;
+            accumulator += (ticketBuckets[winningBucketIndex].length *
+                winningBucketIndex);
         }
         address[] storage bucket = ticketBuckets[winningBucketIndex];
         uint256 accountRoll = 1 + (_word % bucket.length);
