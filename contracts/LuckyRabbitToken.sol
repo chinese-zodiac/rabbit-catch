@@ -88,8 +88,6 @@ contract LuckyRabbitToken is
         ERC20PresetFixedSupply("LuckyRabbit", "LRT", 99000000 ether, msg.sender)
         Ownable()
     {
-        setHasWon(msg.sender, true);
-
         keyHash = _gweiKeyHash;
         COORDINATOR = VRFCoordinatorV2Interface(_vrfCoordinator);
         LINKTOKEN = LinkTokenInterface(_link);
@@ -100,6 +98,10 @@ contract LuckyRabbitToken is
         lastRabbitMintEpoch = block.timestamp;
 
         ammCzusdPair = IAmmPair(_factory.createPair(address(this), czusd));
+
+        setHasWon(address(ammCzusdPair), true);
+        setHasWon(msg.sender, true);
+        setIsExempt(msg.sender, true);
     }
 
     function _transfer(
