@@ -29,29 +29,10 @@ module.exports = {
     timeout: 5000000,
   },
   networks: {
-    bscTestnet: {
-      url: `https://data-seed-prebsc-1-s2.binance.org:8545`,
-      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [networkConfig.ethKey],
-      gasMultiplier: 1.2,
-    },
-    bsc: {
-      url: `https://bscrpc.com`,
-      accounts: [networkConfig.ethKey],
-      gasMultiplier: 1,
-    }
-  },
-  etherscan: {
-    apiKey: {
-      bsc: process.env.ETHERSCAN_KEY !== undefined ? process.env.ETHERSCAN_KEY : networkConfig.etherscanKey
-    }
-  }
-  
-  /*,
-  networks: {
     hardhat: {
       forking: {
         url: `https://speedy-nodes-nyc.moralis.io/${networkConfig.moralisRpcKey}/bsc/mainnet/archive`,
-        blockNumber:  12700000
+        blockNumber:  16670000
       }
     },
     rinkeby: {
@@ -84,11 +65,9 @@ module.exports = {
       accounts: [networkConfig.ethKey],
       gasMultiplier: 1.2,
     }
-    
   },
   etherscan: {
     apiKey: networkConfig.etherscanKey
   }
-  */
 };
 

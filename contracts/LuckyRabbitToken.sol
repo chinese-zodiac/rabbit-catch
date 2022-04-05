@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: MIT
-// An example of a consumer contract that relies on a subscription for funding.
+// Authored by Plastic Digits
+// Credit to Chainlink
 pragma solidity ^0.8.4;
 
 import "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
@@ -53,7 +54,7 @@ contract LuckyRabbitToken is
 
     mapping(address => bool) public isExempt;
 
-    uint256 public burnBPS = 10000;
+    uint256 public burnBPS = 1000;
     uint256 public tokensPerTicket = 1 ether;
     uint256 public czusdLockPerMint = 250 ether;
     uint256 public lastRabbitMintEpoch;
@@ -70,9 +71,9 @@ contract LuckyRabbitToken is
     bool isVrfPending;
     bool isRandomWordReady;
 
-    RabbitMinterV3 rabbitMinter;
-    IAmmPair ammCzusdPair;
-    address czusd;
+    RabbitMinterV3 public rabbitMinter;
+    IAmmPair public ammCzusdPair;
+    address public czusd;
 
     constructor(
         uint64 _subscriptionId,
@@ -85,7 +86,7 @@ contract LuckyRabbitToken is
         uint256 _baseCzusdLocked
     )
         VRFConsumerBaseV2(_vrfCoordinator)
-        ERC20PresetFixedSupply("LuckyRabbit", "LRT", 99000000 ether, msg.sender)
+        ERC20PresetFixedSupply("LuckyRabbit", "LRT", 10000 ether, msg.sender)
         Ownable()
     {
         keyHash = _gweiKeyHash;
