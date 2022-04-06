@@ -178,11 +178,11 @@ contract LuckyRabbitToken is
 
     function rabbitsToMint() public view returns (uint256 rabbitMintCount_) {
         return
-            ((_lockedCzusd() - baseCzusdLocked) / czusdLockPerMint) -
+            ((lockedCzusd() - baseCzusdLocked) / czusdLockPerMint) -
             totalRabbitsMinted;
     }
 
-    function _lockedCzusd() internal view returns (uint256 lockedCzusd_) {
+    function lockedCzusd() public view returns (uint256 lockedCzusd_) {
         bool czusdIsToken0 = ammCzusdPair.token0() == czusd;
         (uint112 reserve0, uint112 reserve1, ) = ammCzusdPair.getReserves();
         uint256 lockedLP = ammCzusdPair.balanceOf(address(this));
@@ -251,7 +251,7 @@ contract LuckyRabbitToken is
                 winningBucketIndex);
         }
         address[] storage bucket = ticketBuckets[winningBucketIndex];
-        uint256 accountRoll = 1 + (_word % bucket.length);
+        uint256 accountRoll = _word % bucket.length;
         winner_ = bucket[accountRoll];
     }
 

@@ -10,7 +10,7 @@ const { time } = require("@openzeppelin/test-helpers");
 const { toNum, toBN } = require("./utils/bignumberConverter");
 const parse = require('csv-parse');
 const { expect } = chai;
-const { parseEther, formatEther } = ethers.utils;
+const { parseEther, formatEther, defaultAbiCoder } = ethers.utils;
 
 const PCS_FACTORY = "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73";
 const PCS_ROUTER = "0x10ED43C718714eb63d5aA57B78B54704E256024E";
@@ -25,9 +25,12 @@ const GWEI_KEY_HASH = "0x114f3da0a805b6a67d6e9cd2ec746f7028f1b7376365af575cfea35
 
 const BASE_CZUSD_LP = parseEther("10000");
 
+const checkDataVrf = defaultAbiCoder.encode(["uint8"],[0]);
+const checkDataMint = defaultAbiCoder.encode(["uint8"],[1]);
+
 describe("LuckyRabbitToken", function () {
   let owner, trader, trader1, trader2, trader3;
-  let deployer, czusdMinter;
+  let deployer, czusdMinter, vrfCoordinatorMock;
   let rabbitMinter;
   let czNft;
   let luckyRabbitToken;
@@ -35,29 +38,33 @@ describe("LuckyRabbitToken", function () {
   let czusd;
   let lrtCzusdPair;
   before(async function() {
-    [owner, trader, trader1, trader2, trader3] = await ethers.getSigners();
+    [owner, trader, trader1, trader2, trader3, vrfCoordinatorMock] = await ethers.getSigners();
 
-    await hre.network.provider.request({
+    //console.log("Get deployer");
+    await hre.network.provider.request({ 
       method: "hardhat_impersonateAccount",
       params: [CZ_DEPLOYER],
     });
     deployer = await ethers.getSigner(CZ_DEPLOYER);
 
+    //console.log("Get minter");
     await hre.network.provider.request({
       method: "hardhat_impersonateAccount",
       params: [CZUSD_MINTER],
     });
     czusdMinter = await ethers.getSigner(CZUSD_MINTER);
 
+    //console.log("Get contracts");
     czNft = await ethers.getContractAt("CZodiacNFT", CZ_NFT);
     rabbitMinter = await ethers.getContractAt("RabbitMinterV3", RABBIT_MINTER);
     pcsRouter = await ethers.getContractAt("IAmmRouter02", PCS_ROUTER);
     czusd = await ethers.getContractAt("CZUsd", CZUSD_TOKEN);
 
+    //console.log("Deploy LRT");
     const LuckyRabbitToken = await ethers.getContractFactory("LuckyRabbitToken");
     luckyRabbitToken = await LuckyRabbitToken.deploy(
         0,//uint64 _subscriptionId,
-        VRF_COORDINATOR,//address _vrfCoordinator,
+        vrfCoordinatorMock.address,//address _vrfCoordinator,
         LINK_TOKEN,//address _link,
         GWEI_KEY_HASH,//bytes32 _gweiKeyHash,
         RABBIT_MINTER,//RabbitMinterV3 _rabbitMinter,
@@ -65,12 +72,15 @@ describe("LuckyRabbitToken", function () {
         CZUSD_TOKEN,//address _czusd,
         BASE_CZUSD_LP//uint256 _baseCzusdLocked
     );
+    //console.log("Get LRT amm pair");
     const lrtCzusdPairAddress = await luckyRabbitToken.ammCzusdPair();
     lrtCzusdPair = await ethers.getContractAt("IAmmPair", lrtCzusdPairAddress);
 
+    //console.log("Grant minter role");
     const minterRole = await rabbitMinter.MINTER_ROLE();
     await rabbitMinter.connect(deployer).grantRole(minterRole,luckyRabbitToken.address);
 
+    //console.log("Mint and add lp");
     await czusd.connect(czusdMinter).mint(owner.address,parseEther("10000"));
     await czusd.approve(pcsRouter.address,ethers.constants.MaxUint256);
     await luckyRabbitToken.approve(pcsRouter.address,ethers.constants.MaxUint256);
@@ -106,5 +116,72 @@ describe("LuckyRabbitToken", function () {
     expect(pairHasWon).to.be.true;
     expect(ownerIsExempt).to.be.true;
     expect(pairIsExempt).to.be.false;
+  });
+  it("Should burn 10% on buy and get tickets", async function () {
+    await czusd.connect(czusdMinter).mint(trader.address,parseEther("10000"));
+    await czusd.connect(trader).approve(pcsRouter.address,ethers.constants.MaxUint256);
+    await pcsRouter.connect(trader).swapExactTokensForTokensSupportingFeeOnTransferTokens(
+        parseEther("100"),
+        0,
+        [czusd.address,luckyRabbitToken.address],
+        trader.address,
+        ethers.constants.MaxUint256
+    );
+    const traderBal = await luckyRabbitToken.balanceOf(trader.address);
+    const totalSupply = await luckyRabbitToken.totalSupply();
+    const lockedCzusd = await luckyRabbitToken.lockedCzusd();
+    const traderTickets = await luckyRabbitToken.addressTickets(trader.address);
+    const totalTickets = await luckyRabbitToken.totalTickets();
+    const traderTicketBucketIndex = await luckyRabbitToken.addressTicketBucketIndex(trader.address);
+    const rabbitsToMint = await luckyRabbitToken.rabbitsToMint();
+    const checkUpkeepVrf = await luckyRabbitToken.checkUpkeep(checkDataVrf);
+    const checkUpkeepMint = await luckyRabbitToken.checkUpkeep(checkDataMint);
+    const getWinner = await luckyRabbitToken.getWinner(Math.floor(Math.random()*100000));
+    expect(traderBal).to.be.closeTo(parseEther("88.8"),parseEther("0.1"));
+    expect(totalSupply).to.be.closeTo(parseEther("9990.1"),parseEther("0.1"));
+    expect(lockedCzusd).to.be.closeTo(parseEther("10010.3"),parseEther("0.1"));
+    expect(traderTickets).to.eq(88);
+    expect(totalTickets).to.eq(88);
+    expect(traderTicketBucketIndex).to.eq(0);
+    expect(rabbitsToMint).to.eq(0);
+    expect(checkUpkeepVrf[0]).to.be.false;
+    expect(checkUpkeepMint[0]).to.be.false;
+    expect(getWinner.toUpperCase()).to.eq(trader.address.toUpperCase());
+  });
+  it("Should grant max of 200 tickets", async function () {
+    await pcsRouter.connect(trader).swapExactTokensForTokensSupportingFeeOnTransferTokens(
+        parseEther("3000"),
+        0,
+        [czusd.address,luckyRabbitToken.address],
+        trader.address,
+        ethers.constants.MaxUint256
+    );
+    const traderTickets = await luckyRabbitToken.addressTickets(trader.address);
+    const totalTickets = await luckyRabbitToken.totalTickets();
+    const traderTicketBucketIndex = await luckyRabbitToken.addressTicketBucketIndex(trader.address);
+    const lockedCzusd = await luckyRabbitToken.lockedCzusd();
+    const rabbitsToMint = await luckyRabbitToken.rabbitsToMint();
+    const checkUpkeepVrf = await luckyRabbitToken.checkUpkeep(checkDataVrf);
+    const checkUpkeepMint = await luckyRabbitToken.checkUpkeep(checkDataMint);
+    const getWinner = await luckyRabbitToken.getWinner(Math.floor(Math.random()*100000));
+    expect(lockedCzusd).to.be.closeTo(parseEther("10252.4"),parseEther("0.1"));
+    expect(traderTickets).to.eq(200);
+    expect(totalTickets).to.eq(200);
+    expect(traderTicketBucketIndex).to.eq(0);
+    expect(rabbitsToMint).to.eq(1);
+    expect(checkUpkeepVrf[0]).to.be.false;
+    expect(checkUpkeepMint[0]).to.be.false;
+    expect(getWinner.toUpperCase()).to.eq(trader.address.toUpperCase());
+    await expect(luckyRabbitToken.performUpkeep(checkDataVrf)).to.be.reverted;
+    await expect(luckyRabbitToken.performUpkeep(checkDataMint)).to.be.reverted;
+  });
+  it("Should enable vrf after 24 hours", async function () {
+    await time.increase(time.duration.days(1));
+    await time.advanceBlock();
+    const checkUpkeepVrf = await luckyRabbitToken.checkUpkeep(checkDataVrf);
+    const checkUpkeepMint = await luckyRabbitToken.checkUpkeep(checkDataMint);
+    expect(checkUpkeepVrf[0]).to.be.true;
+    expect(checkUpkeepMint[0]).to.be.false;
+    await expect(luckyRabbitToken.performUpkeep(checkDataMint)).to.be.reverted;
   });
 });
