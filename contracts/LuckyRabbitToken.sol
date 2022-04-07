@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: MIT
 // Authored by Plastic Digits
-// Credit to Chainlink
+// Thanks to Chainlink for assistance
 pragma solidity ^0.8.4;
+
+//import "hardhat/console.sol";
 
 import "@chainlink/contracts/src/v0.8/interfaces/LinkTokenInterface.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
+import "@chainlink/contracts/src/v0.8/mocks/VRFCoordinatorV2Mock.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/KeeperCompatibleInterface.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/access/AccessControlEnumerable.sol";
@@ -50,7 +53,8 @@ contract LuckyRabbitToken is
 
     // The default is 3, but you can set this higher.
     uint16 requestConfirmations = 3;
-    uint256 randomWord;
+    uint256 public randomWord;
+    uint256 public vrfRequestId;
 
     mapping(address => bool) public isExempt;
 
@@ -68,8 +72,8 @@ contract LuckyRabbitToken is
     uint256 public totalTickets = 0;
     uint256 public baseCzusdLocked;
 
-    bool isVrfPending;
-    bool isRandomWordReady;
+    bool public isVrfPending;
+    bool public isRandomWordReady;
 
     RabbitMinterV3 public rabbitMinter;
     IAmmPair public ammCzusdPair;
@@ -217,13 +221,13 @@ contract LuckyRabbitToken is
             addressTicketBucketIndex[toMove] = index;
             bucket[index] = toMove;
         }
-        delete bucket[bucket.length - 1];
+        bucket.pop();
     }
 
     //VRF CHAINLINK
     function _requestRandomWords() internal {
         // Will revert if subscription is not set and funded.
-        COORDINATOR.requestRandomWords(
+        vrfRequestId = COORDINATOR.requestRandomWords(
             keyHash,
             s_subscriptionId,
             requestConfirmations,
@@ -247,7 +251,7 @@ contract LuckyRabbitToken is
         uint256 accumulator;
         while (accumulator < bucketRoll) {
             winningBucketIndex++;
-            accumulator += (ticketBuckets[winningBucketIndex].length *
+            accumulator += ((ticketBuckets[winningBucketIndex].length) *
                 winningBucketIndex);
         }
         address[] storage bucket = ticketBuckets[winningBucketIndex];

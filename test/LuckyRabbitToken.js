@@ -30,15 +30,17 @@ const checkDataMint = defaultAbiCoder.encode(["uint8"],[1]);
 
 describe("LuckyRabbitToken", function () {
   let owner, trader, trader1, trader2, trader3;
-  let deployer, czusdMinter, vrfCoordinatorMock;
+  let deployer, czusdMinter;
   let rabbitMinter;
   let czNft;
   let luckyRabbitToken;
   let pcsRouter;
   let czusd;
   let lrtCzusdPair;
+  let vrfCoordinatorMock;
+  let subscriptionId;
   before(async function() {
-    [owner, trader, trader1, trader2, trader3, vrfCoordinatorMock] = await ethers.getSigners();
+    [owner, trader, trader1, trader2, trader3] = await ethers.getSigners();
 
     //console.log("Get deployer");
     await hre.network.provider.request({ 
@@ -60,10 +62,17 @@ describe("LuckyRabbitToken", function () {
     pcsRouter = await ethers.getContractAt("IAmmRouter02", PCS_ROUTER);
     czusd = await ethers.getContractAt("CZUsd", CZUSD_TOKEN);
 
+    const VRFCoordinatorV2Mock = await ethers.getContractFactory("VRFCoordinatorV2Mock");
+    vrfCoordinatorMock = await VRFCoordinatorV2Mock.deploy(parseEther("0.005"),5000000000*27); //27 LINK = 1 BNB, BSC gas price of 5 gwei
+    await vrfCoordinatorMock.deployed();
+    await vrfCoordinatorMock.createSubscription();
+    subscriptionId = 1; //First subscription is always 1
+    await vrfCoordinatorMock.fundSubscription(subscriptionId,parseEther("100"));
+
     //console.log("Deploy LRT");
     const LuckyRabbitToken = await ethers.getContractFactory("LuckyRabbitToken");
     luckyRabbitToken = await LuckyRabbitToken.deploy(
-        0,//uint64 _subscriptionId,
+        subscriptionId,//uint64 _subscriptionId,
         vrfCoordinatorMock.address,//address _vrfCoordinator,
         LINK_TOKEN,//address _link,
         GWEI_KEY_HASH,//bytes32 _gweiKeyHash,
@@ -72,6 +81,7 @@ describe("LuckyRabbitToken", function () {
         CZUSD_TOKEN,//address _czusd,
         BASE_CZUSD_LP//uint256 _baseCzusdLocked
     );
+    await luckyRabbitToken.deployed();
     //console.log("Get LRT amm pair");
     const lrtCzusdPairAddress = await luckyRabbitToken.ammCzusdPair();
     lrtCzusdPair = await ethers.getContractAt("IAmmPair", lrtCzusdPairAddress);
@@ -136,7 +146,12 @@ describe("LuckyRabbitToken", function () {
     const rabbitsToMint = await luckyRabbitToken.rabbitsToMint();
     const checkUpkeepVrf = await luckyRabbitToken.checkUpkeep(checkDataVrf);
     const checkUpkeepMint = await luckyRabbitToken.checkUpkeep(checkDataMint);
-    const getWinner = await luckyRabbitToken.getWinner(Math.floor(Math.random()*100000));
+    const getWinner1 = await luckyRabbitToken.getWinner(0);
+    const getWinner2 = await luckyRabbitToken.getWinner(1);
+    const getWinner3 = await luckyRabbitToken.getWinner(87);
+    const getWinner4 = await luckyRabbitToken.getWinner(88);
+    const getWinner5 = await luckyRabbitToken.getWinner(89);
+    const getWinner6 = await luckyRabbitToken.getWinner(10000);
     expect(traderBal).to.be.closeTo(parseEther("88.8"),parseEther("0.1"));
     expect(totalSupply).to.be.closeTo(parseEther("9990.1"),parseEther("0.1"));
     expect(lockedCzusd).to.be.closeTo(parseEther("10010.3"),parseEther("0.1"));
@@ -146,7 +161,12 @@ describe("LuckyRabbitToken", function () {
     expect(rabbitsToMint).to.eq(0);
     expect(checkUpkeepVrf[0]).to.be.false;
     expect(checkUpkeepMint[0]).to.be.false;
-    expect(getWinner.toUpperCase()).to.eq(trader.address.toUpperCase());
+    expect(getWinner1.toUpperCase()).to.eq(trader.address.toUpperCase());
+    expect(getWinner2.toUpperCase()).to.eq(trader.address.toUpperCase());
+    expect(getWinner3.toUpperCase()).to.eq(trader.address.toUpperCase());
+    expect(getWinner4.toUpperCase()).to.eq(trader.address.toUpperCase());
+    expect(getWinner5.toUpperCase()).to.eq(trader.address.toUpperCase());
+    expect(getWinner6.toUpperCase()).to.eq(trader.address.toUpperCase());
   });
   it("Should grant max of 200 tickets", async function () {
     await pcsRouter.connect(trader).swapExactTokensForTokensSupportingFeeOnTransferTokens(
@@ -163,7 +183,8 @@ describe("LuckyRabbitToken", function () {
     const rabbitsToMint = await luckyRabbitToken.rabbitsToMint();
     const checkUpkeepVrf = await luckyRabbitToken.checkUpkeep(checkDataVrf);
     const checkUpkeepMint = await luckyRabbitToken.checkUpkeep(checkDataMint);
-    const getWinner = await luckyRabbitToken.getWinner(Math.floor(Math.random()*100000));
+    const getWinner1 = await luckyRabbitToken.getWinner(1);
+    const getWinner2 = await luckyRabbitToken.getWinner(89);
     expect(lockedCzusd).to.be.closeTo(parseEther("10252.4"),parseEther("0.1"));
     expect(traderTickets).to.eq(200);
     expect(totalTickets).to.eq(200);
@@ -171,7 +192,8 @@ describe("LuckyRabbitToken", function () {
     expect(rabbitsToMint).to.eq(1);
     expect(checkUpkeepVrf[0]).to.be.false;
     expect(checkUpkeepMint[0]).to.be.false;
-    expect(getWinner.toUpperCase()).to.eq(trader.address.toUpperCase());
+    expect(getWinner1.toUpperCase()).to.eq(trader.address.toUpperCase());
+    expect(getWinner2.toUpperCase()).to.eq(trader.address.toUpperCase());
     await expect(luckyRabbitToken.performUpkeep(checkDataVrf)).to.be.reverted;
     await expect(luckyRabbitToken.performUpkeep(checkDataMint)).to.be.reverted;
   });
@@ -183,5 +205,43 @@ describe("LuckyRabbitToken", function () {
     expect(checkUpkeepVrf[0]).to.be.true;
     expect(checkUpkeepMint[0]).to.be.false;
     await expect(luckyRabbitToken.performUpkeep(checkDataMint)).to.be.reverted;
+  });
+  it("Should get random words", async function () {
+    const vrfGasEsimation = await luckyRabbitToken.estimateGas.performUpkeep(checkDataVrf);
+    await luckyRabbitToken.performUpkeep(checkDataVrf);
+    const requestId = await luckyRabbitToken.vrfRequestId();
+    const subBalInitial = (await vrfCoordinatorMock.getSubscription(subscriptionId)).balance;
+    const isVrfPendingInitial = await luckyRabbitToken.isVrfPending();
+    const checkUpkeepMintInitial = await luckyRabbitToken.checkUpkeep(checkDataMint);
+    await vrfCoordinatorMock.fulfillRandomWords(requestId,luckyRabbitToken.address);
+    const randomWord = await luckyRabbitToken.randomWord();
+    const isVrfPendingFinal = await luckyRabbitToken.isVrfPending();
+    const checkUpkeepVrf = await luckyRabbitToken.checkUpkeep(checkDataVrf);
+    const checkUpkeepMintFinal = await luckyRabbitToken.checkUpkeep(checkDataMint);
+    const subBalFinal = (await vrfCoordinatorMock.getSubscription(subscriptionId)).balance;
+    expect(vrfGasEsimation.toNumber()).to.eq(141997);
+    expect(randomWord).to.not.eq(0);
+    expect(isVrfPendingInitial).to.be.true;
+    expect(isVrfPendingFinal).to.be.false;
+    expect(checkUpkeepVrf[0]).to.be.false;
+    expect(checkUpkeepMintInitial[0]).to.be.false;
+    expect(checkUpkeepMintFinal[0]).to.be.true;
+    expect(subBalInitial.sub(subBalFinal)).to.be.closeTo(parseEther("0.0097"),parseEther("0.0001"))
+  });
+  it("Should mint NFT to winner", async function () {
+    const mintGasEsimation = await luckyRabbitToken.estimateGas.performUpkeep(checkDataMint);
+    await luckyRabbitToken.performUpkeep(checkDataMint);
+    const currentTime = (await time.latest()).toNumber();
+    const nftBal = await czNft.balanceOf(trader.address);
+    const lastRabbitMintEpoch = await luckyRabbitToken.lastRabbitMintEpoch();
+    const checkUpkeepVrf = await luckyRabbitToken.checkUpkeep(checkDataVrf);
+    const checkUpkeepMint = await luckyRabbitToken.checkUpkeep(checkDataMint);
+    const rabbitsToMint = await luckyRabbitToken.rabbitsToMint();
+    expect(mintGasEsimation.toNumber()).to.eq(910790);
+    expect(nftBal).to.eq(1);
+    expect(checkUpkeepVrf[0]).to.be.false;
+    expect(rabbitsToMint).to.eq(0);
+    expect(checkUpkeepMint[0]).to.be.false;
+    expect(lastRabbitMintEpoch).to.equal(currentTime);
   });
 });
