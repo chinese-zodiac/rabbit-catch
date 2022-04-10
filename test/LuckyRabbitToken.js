@@ -237,11 +237,80 @@ describe("LuckyRabbitToken", function () {
     const checkUpkeepVrf = await luckyRabbitToken.checkUpkeep(checkDataVrf);
     const checkUpkeepMint = await luckyRabbitToken.checkUpkeep(checkDataMint);
     const rabbitsToMint = await luckyRabbitToken.rabbitsToMint();
+    const traderTickets = await luckyRabbitToken.addressTickets(trader.address);
+    const totalTickets = await luckyRabbitToken.totalTickets();
     expect(mintGasEsimation.toNumber()).to.eq(910790);
     expect(nftBal).to.eq(1);
     expect(checkUpkeepVrf[0]).to.be.false;
     expect(rabbitsToMint).to.eq(0);
     expect(checkUpkeepMint[0]).to.be.false;
     expect(lastRabbitMintEpoch).to.equal(currentTime);
+    expect(traderTickets).to.eq(0);
+    expect(totalTickets).to.eq(0);
+  });
+  it("Should pick correct winner", async function () {
+      const balToSell = await luckyRabbitToken.balanceOf(trader.address);
+      await luckyRabbitToken.connect(trader).approve(pcsRouter.address,ethers.constants.MaxUint256);
+      await pcsRouter.connect(trader).swapExactTokensForTokensSupportingFeeOnTransferTokens(
+          balToSell,
+          0,
+          [luckyRabbitToken.address,czusd.address],
+          trader.address,
+          ethers.constants.MaxUint256
+      );
+
+      await time.increase(time.duration.days(1));
+      await time.advanceBlock();
+      await czusd.connect(czusdMinter).mint(trader1.address,parseEther("10000"));
+      await czusd.connect(czusdMinter).mint(trader2.address,parseEther("10000"));
+      await czusd.connect(czusdMinter).mint(trader3.address,parseEther("10000"));
+      await czusd.connect(trader1).approve(pcsRouter.address,ethers.constants.MaxUint256);
+      await czusd.connect(trader2).approve(pcsRouter.address,ethers.constants.MaxUint256);
+      await czusd.connect(trader3).approve(pcsRouter.address,ethers.constants.MaxUint256);
+      await pcsRouter.connect(trader1).swapExactTokensForTokensSupportingFeeOnTransferTokens(
+          parseEther("50"),
+          0,
+          [czusd.address,luckyRabbitToken.address],
+          trader1.address,
+          ethers.constants.MaxUint256
+      );
+      await pcsRouter.connect(trader2).swapExactTokensForTokensSupportingFeeOnTransferTokens(
+          parseEther("1500"),
+          0,
+          [czusd.address,luckyRabbitToken.address],
+          trader2.address,
+          ethers.constants.MaxUint256
+      );
+      await pcsRouter.connect(trader3).swapExactTokensForTokensSupportingFeeOnTransferTokens(
+          parseEther("10000"),
+          0,
+          [czusd.address,luckyRabbitToken.address],
+          trader3.address,
+          ethers.constants.MaxUint256
+      );
+      const trader1Tickets = await luckyRabbitToken.addressTickets(trader1.address);
+      const trader2Tickets = await luckyRabbitToken.addressTickets(trader2.address);
+      const trader3Tickets = await luckyRabbitToken.addressTickets(trader3.address);
+      const rabbitsToMint = await luckyRabbitToken.rabbitsToMint();
+      const totalTickets = await luckyRabbitToken.totalTickets();
+      const lockedCzusd = await luckyRabbitToken.lockedCzusd();
+
+      const getWinner1 = await luckyRabbitToken.getWinner(1);
+      const getWinner2 = await luckyRabbitToken.getWinner(42);
+      const getWinner3 = await luckyRabbitToken.getWinner(43);
+
+
+      expect(trader1Tickets).to.eq(40);
+      expect(trader2Tickets).to.eq(200);
+      expect(trader3Tickets).to.eq(200);
+      expect(rabbitsToMint).to.eq(3);
+      expect(totalTickets).to.eq(440);
+      expect(lockedCzusd).to.be.closeTo(parseEther("11087"),parseEther("1"))
+
+      expect(getWinner1).to.eq(trader1.address);
+      expect(getWinner2).to.eq(trader2.address);
+      expect(getWinner3).to.eq(trader3.address);
+      
+
   });
 });
