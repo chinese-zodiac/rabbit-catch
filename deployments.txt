@@ -4,3 +4,6 @@ CZodiacNFT deployed at 0x8320213966B02b044eFD007575177Bb40Ae33be5
 RabbitMinterV3 deployed at 0xD3F0E3c2E16231eD817793bC3052a6C5E6f3bD21
 CZUsd deployed to: 0x2af880f34F479506Fa8001F13c4c0d7e126A290B
 LuckyRabbitToken deployed to: 0x8F89d52CD9ac0d0A25884AdD726DdF48d6faad80
+LRT:checkDataVrf https://keepers.chain.link/chapel/557
+LRT:checkDataMint https://keepers.chain.link/chapel/558
+LRT:vrf https://vrf.chain.link/chapel/485
