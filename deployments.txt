@@ -7,3 +7,10 @@ LuckyRabbitToken deployed to: 0x8F89d52CD9ac0d0A25884AdD726DdF48d6faad80
 LRT:checkDataVrf https://keepers.chain.link/chapel/557
 LRT:checkDataMint https://keepers.chain.link/chapel/558
 LRT:vrf https://vrf.chain.link/chapel/485
+
+mainnet
+VRF subscription id: 73
+LuckyRabbitToken deployed to: 0xE95412D2d374B957ca7f8d96ABe6b6c1148fA438
+LRT_checkDataVrf https://keepers.chain.link/bsc/0x7cf7423f39c907680d17f590c07836c26caed5e8a3cf9064267a98470ef48200
+LRT_checkDataMint https://keepers.chain.link/bsc/0x7e419f1f5eb5f4ab31c0d64736a962fdcef29b2d3d29edf6ab1f3dfdb0416081
+LRT:vrf https://vrf.chain.link/bsc/73
