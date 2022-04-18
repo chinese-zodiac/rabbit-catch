@@ -56,7 +56,7 @@ module.exports = {
       gasMultiplier: 1.2,
     },
     bsc: {
-      url: `https://bscrpc.com`,
+      url: `https://rpc.ankr.com/bsc`,
       accounts: [networkConfig.ethKey],
       gasMultiplier: 1,
     },

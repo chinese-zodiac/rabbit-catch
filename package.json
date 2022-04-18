@@ -15,7 +15,7 @@
     "@openzeppelin/contracts": "^4.4.1",
     "@openzeppelin/test-helpers": "^0.5.11",
     "chai": "^4.3.4",
-    "csv-parse": "^4.16.0",
+    "csv-parse": "^5.0.4",
     "ethereum-waffle": "^3.3.0",
     "ethers": "^5.1.4",
     "export-to-csv": "^0.2.1",
