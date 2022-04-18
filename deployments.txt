@@ -11,6 +11,8 @@ LRT:vrf https://vrf.chain.link/chapel/485
 mainnet
 VRF subscription id: 73
 LuckyRabbitToken deployed to: 0xE95412D2d374B957ca7f8d96ABe6b6c1148fA438
-LRT_checkDataVrf https://keepers.chain.link/bsc/0x7cf7423f39c907680d17f590c07836c26caed5e8a3cf9064267a98470ef48200
-LRT_checkDataMint https://keepers.chain.link/bsc/0x7e419f1f5eb5f4ab31c0d64736a962fdcef29b2d3d29edf6ab1f3dfdb0416081
+LRTPatch deployed to: 0x8050437A017E145b585896B6E1Fd163f4AC87e1e
+IterableArray lib: 0x4222FFCf286610476B7b5101d55E72436e4a6065
 LRT:vrf https://vrf.chain.link/bsc/73
+lrtpatch_vrf:https://keepers.chain.link/bsc/0xc3e24823b91f03fd9c3ec0af23ef8c94145872524c8c9027148e3443ba5da9a2
+lrtpatch_mint:https://keepers.chain.link/bsc/0x296aa8d7613617c1d4557489b19ed5af30ad878b1e39e86695f9fa74c2e9175e

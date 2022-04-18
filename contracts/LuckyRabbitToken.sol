@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: GPL-3.0
 // Authored by Plastic Digits
 // Thanks to Chainlink for assistance
 pragma solidity ^0.8.4;
@@ -149,6 +149,8 @@ contract LuckyRabbitToken is
 
         //Add the address to the bucket.
         ticketBuckets[tickets].push(_for);
+        //BUG: loc below was missing from initial LRT launch, allows 2 way mapping
+        //addressTicketBucketIndex[_for] = ticketBuckets.length - 1;
     }
 
     function setIsExempt(address _for, bool _to) public onlyOwner {
@@ -316,6 +318,7 @@ contract LuckyRabbitToken is
     }
 
     function _performUpkeepMintRabbit() internal {
+        //BUG: must be called in same block as vrf generated, OR use a snapshot
         require(_isUpkeepAllowedMint(), "LRT: Mint Upkeep not allowed");
         isRandomWordReady = false;
         lastRabbitMintEpoch = block.timestamp;
