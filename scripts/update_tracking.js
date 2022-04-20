@@ -9,7 +9,7 @@ const timersPromises = require('timers/promises');
 const { parseEther, formatEther, defaultAbiCoder } = ethers.utils;
 
 const LUCKYRABBITTOKEN = "0xE95412D2d374B957ca7f8d96ABe6b6c1148fA438";
-const LRTPATCH = "0x8050437A017E145b585896B6E1Fd163f4AC87e1e";
+const LRTPATCH = "0x8518b4C36007133ef8528BE9Cf4fb6DaD976E090";
 
 
 async function main() {
@@ -71,7 +71,7 @@ async function main() {
     }
     if(!hasWon[index] && balances[index].gte(parseEther("1")) && trackedIndex[index].eq("-1")) {
       console.log("Adding:",account);
-      toTrack.push()
+      toTrack.push(account)
     }
   })
   if(toTrack.length > 0) {

@@ -65,7 +65,7 @@ contract LRTPatch is VRFConsumerBaseV2, KeeperCompatibleInterface, Ownable {
         setLuckyRabbitToken(_luckyRabbitToken);
 
         setLastRabbitMintEpoch(luckyRabbitToken.lastRabbitMintEpoch());
-        setTotalRabbitsMinted(luckyRabbitToken.totalRabbitsMinted());
+        setTotalRabbitsMinted(luckyRabbitToken.totalRabbitsMinted() + 1);
 
         setHasWon(address(luckyRabbitToken.ammCzusdPair()), true);
         setHasWon(0xd6DE82E23BbCF0411380FD6ac070b5A35c987051, true); //lrt/bnb pair
@@ -263,6 +263,8 @@ contract LRTPatch is VRFConsumerBaseV2, KeeperCompatibleInterface, Ownable {
         address winner = getWinner(randomWord);
 
         _deleteAccount(winner, addressTickets[winner]);
+
+        addressHasWon[winner] = true;
 
         rabbitMinter.freeMint(winner);
     }

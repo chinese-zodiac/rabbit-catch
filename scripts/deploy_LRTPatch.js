@@ -2,6 +2,7 @@
 
 const {ethers} = require("hardhat");
 const { parseEther, formatEther, defaultAbiCoder } = ethers.utils;
+const timersPromises = require('timers/promises');
 
 const BASE_CZUSD_LP_WAD = parseEther("10000");
 const LINK_TOKEN = "0x404460c6a5ede2d891e8297795264fde62adbb75";
@@ -14,8 +15,10 @@ const CZODIAC_NFT = "0x6Bf5843b39EB6D5d7ee38c0b789CcdE42FE396b4";
 const RABBIT_MINTER_V3 = "0x3387FFb2Ab13dDB3041573dF57041fC1b37Ba4de";
 const CZUSD = "0xE68b79e51bf826534Ff37AA9CeE71a3842ee9c70";
 const LUCKYRABBITTOKEN = "0xE95412D2d374B957ca7f8d96ABe6b6c1148fA438";
+const LRTPATCH_PREV = "0x8050437A017E145b585896B6E1Fd163f4AC87e1e";
+const ITERABLE_ARRAY = "0x4222FFCf286610476B7b5101d55E72436e4a6065";
 
-const TOTRACK = [
+/*const TOTRACK = [
 "0xc13196f6fec6ffbd3194adf78f64b420875a1761",
 "0xfe8d999c01afb7f40abeefac282e61b054387fd5",
 "0xcf992cd6680079ad32d1ee3dacb4bf931291941e",
@@ -46,7 +49,7 @@ const TOTRACK = [
 "0x9301a742ff70685c9c49cfd154a81dede03e4335",
 "0xec124a95d59c6d484e03d0a6593dac0428467351",
 "0x0411b3f12cfff8c0ee24e18b2ce8a229cbb28914"
-];
+];*/
 
 async function main() {
   const [deployer] = await ethers.getSigners();
@@ -57,15 +60,15 @@ async function main() {
   console.log('Getting RabbitMinterV3');
   const rabbitMinterV3 =  await ethers.getContractAt("RabbitMinterV3", RABBIT_MINTER_V3);
 
-  console.log("Deploying iterablearray lib");
+  /*console.log("Deploying iterablearray lib");
   const IterableArrayWithoutDuplicateKeys = await ethers.getContractFactory('IterableArrayWithoutDuplicateKeys')
   const iterableArrayWithoutDuplicateKeys = await IterableArrayWithoutDuplicateKeys.deploy()
-  await iterableArrayWithoutDuplicateKeys.deployed();
+  await iterableArrayWithoutDuplicateKeys.deployed();*/
 
   console.log('deploying LRTPatch');
   const LRTPatch = await ethers.getContractFactory("LRTPatch",{
           libraries: {
-            IterableArrayWithoutDuplicateKeys: iterableArrayWithoutDuplicateKeys.address,
+            IterableArrayWithoutDuplicateKeys: ITERABLE_ARRAY,
           },
         });
   const lrtPatch = await LRTPatch.deploy(
@@ -78,19 +81,40 @@ async function main() {
     );
     await lrtPatch.deployed();
   console.log("LRTPatch deployed to:", lrtPatch.address);
+  await timersPromises.setTimeout(1000); //reduce likelyhood of duplicate nonces by waiting 1s
   
-  console.log("Revoking RabbitMinterV3 mint rights from LuckyRabbitToken")
+  /*console.log("Revoking RabbitMinterV3 mint rights from LuckyRabbitToken")
   const minterRole = await rabbitMinterV3.MINTER_ROLE();
   tx = await rabbitMinterV3.revokeRole(minterRole,luckyRabbitToken.address);
+  await tx.wait();*/
+
+  
+  console.log("Revoking RabbitMinterV3 mint rights from previous LRTPATCH_PREV")
+  const minterRole = await rabbitMinterV3.MINTER_ROLE();
+  tx = await rabbitMinterV3.revokeRole(minterRole,"0xb944d18c44aac4fb6e5996d6074175701e791d7a");
   await tx.wait();
+  await timersPromises.setTimeout(1000); //reduce likelyhood of duplicate nonces by waiting 1s
   
   console.log("Granting RabbitMinterV3 mint rights to LRTPatch")
   tx = await rabbitMinterV3.grantRole(minterRole,lrtPatch.address);
   await tx.wait();
+  await timersPromises.setTimeout(1000); //reduce likelyhood of duplicate nonces by waiting 1s  
 
-  console.log("Tracking addresses...");
+  console.log("Adding past winners")
+  tx = await lrtPatch.setHasWon("0x43f600bBE898eb783DE36F5Ca32fb65aE33Bd691",true);
+  await tx.wait();
+  await timersPromises.setTimeout(1000); //reduce likelyhood of duplicate nonces by waiting 1s  
+  tx = await lrtPatch.setHasWon("0xd6de82e23bbcf0411380fd6ac070b5a35c987051",true);
+  await tx.wait();
+  await timersPromises.setTimeout(1000); //reduce likelyhood of duplicate nonces by waiting 1s  
+  tx = await lrtPatch.setHasWon("0x98f657d970ad3b14c5f1f4d60ee6d035eb7ac0d1",true);
+  await tx.wait();
+  await timersPromises.setTimeout(1000); //reduce likelyhood of duplicate nonces by waiting 1s  
+
+  /*console.log("Tracking addresses...");
   tx = await lrtPatch.trackAddresses(TOTRACK);
   await tx.wait();
+  await timersPromises.setTimeout(1000);*///reduce likelyhood of duplicate nonces by waiting 1s
 }
   
   // We recommend this pattern to be able to use async/await everywhere
