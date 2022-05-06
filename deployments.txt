@@ -14,5 +14,5 @@ LuckyRabbitToken deployed to: 0xE95412D2d374B957ca7f8d96ABe6b6c1148fA438
 LRTPatch deployed to: 0x8518b4C36007133ef8528BE9Cf4fb6DaD976E090
 IterableArray lib: 0x4222FFCf286610476B7b5101d55E72436e4a6065
 LRT:vrf https://vrf.chain.link/bsc/73
-lrtpatch_vrf:https://keepers.chain.link/bsc/0x69ce6943159eb4069f61b1340e2197afa098243432c70fce06121d4ec9e8c4fb
-lrtpatch_mint:https://keepers.chain.link/bsc/0x637c1b6a4e43971124b66c3a7686e61bcb5c7120474404e147c2d85dd9c5d765
+lrtpatch_vrf:https://keepers.chain.link/bsc/50
+lrtpatch_mint:https://keepers.chain.link/bsc/51
